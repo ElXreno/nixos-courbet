@@ -1,5 +1,22 @@
 {
   "nodes": {
+    "linux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790805414,
+        "narHash": "sha256-37kssV35DyBPNVYi4uvdE2lTvQnJRY+hpswr6IPacIE=",
+        "owner": "ElXreno",
+        "repo": "linux",
+        "rev": "71b48aeee03c80c2d7f539f8f7a1e395dd769a7d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ElXreno",
+        "ref": "courbet",
+        "repo": "linux",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1790689126,
@@ -18,6 +35,7 @@
     },
     "root": {
       "inputs": {
+        "linux": "linux",
         "nixpkgs": "nixpkgs"
       }
     }

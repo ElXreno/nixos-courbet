@@ -44,6 +44,28 @@ EOF
 udhcpd /etc/udhcpd.conf
 telnetd -l /bin/sh
 
+part() {
+    for u in /sys/class/block/*/uevent; do
+        if grep -qx "PARTNAME=$1" "$u"; then
+            basename "$(dirname "$u")"
+            return
+        fi
+    done
+}
+
+fw=/lib/firmware/qcom/sm7150/xiaomi/courbet
+mkdir -p /mnt/modem /mnt/bluetooth $fw
+mount -t vfat -o ro,noatime "/dev/$(part modem)" /mnt/modem
+mount -t vfat -o ro,noatime "/dev/$(part bluetooth)" /mnt/bluetooth
+for f in cdsp; do
+    ln -s /mnt/modem/image/$f.mdt $fw/$f.mbn
+    ln -s /mnt/modem/image/$f.b[0-9][0-9] $fw/
+done
+
+for m in nvmem_qcom-spmi-sdam qcom-spmi-adc5 qcom-spmi-temp-alarm qcom_smbx qcom_qg qcom_glink_smem qrtr-smd qcom_pd_mapper qcom_q6v5_pas; do
+    modprobe $m
+done
+
 while true; do
     setsid sh -c 'exec sh </dev/ttyGS0 >/dev/ttyGS0 2>&1'
     sleep 1
