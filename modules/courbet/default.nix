@@ -152,6 +152,7 @@ in
   };
 
   networking.useNetworkd = true;
+  networking.networkmanager.unmanaged = [ "usb0" ];
   systemd.network.networks."40-usb0" = {
     matchConfig.Name = "usb0";
     networkConfig = {
