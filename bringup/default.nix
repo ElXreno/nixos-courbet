@@ -9,17 +9,7 @@ let
 
   cmdline = "console=tty0 loglevel=7 clk_ignore_unused pd_ignore_unused";
 
-  mkbootimgArgs = toString [
-    "--header_version 2"
-    "--pagesize 4096"
-    "--base 0x0"
-    "--kernel_offset 0x8000"
-    "--ramdisk_offset 0x01000000"
-    "--tags_offset 0x100"
-    "--dtb_offset 0x01f00000"
-    "--os_version 16.0.0"
-    "--os_patch_level 2026-09"
-  ];
+  mkbootimgArgs = (import ../bootimg.nix).args;
 
   rebootBootloader =
     pkgs.runCommand "reboot-bootloader"
@@ -75,13 +65,13 @@ let
         (cd root && find . -print0 | sort -z | cpio --null -o -H newc --reproducible --owner=0:0) | gzip -9n >$out
       '';
 
-  initramfs = mkInitramfs "bober-bringup-initramfs" true;
-  initramfsBare = mkInitramfs "bober-bringup-initramfs-bare" false;
+  initramfs = mkInitramfs "courbet-bringup-initramfs" true;
+  initramfsBare = mkInitramfs "courbet-bringup-initramfs-bare" false;
 in
 {
   inherit initramfs initramfsBare;
 
-  bootImg = pkgs.runCommand "bober-boot.img" { nativeBuildInputs = [ pkgs.android-tools ]; } ''
+  bootImg = pkgs.runCommand "courbet-bringup-boot.img" { nativeBuildInputs = [ pkgs.android-tools ]; } ''
     mkbootimg ${mkbootimgArgs} \
       --kernel ${kernel}/Image.gz \
       --dtb ${kernel}/dtbs/qcom/sm7150-xiaomi-courbet.dtb \

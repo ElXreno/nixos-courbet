@@ -16,8 +16,8 @@ g=/sys/kernel/config/usb_gadget/g1
 mkdir -p $g/strings/0x409 $g/functions/ncm.usb0 $g/functions/acm.usb0 $g/configs/c.1/strings/0x409
 echo 0x18d1 >$g/idVendor
 echo 0xd001 >$g/idProduct
-echo bober >$g/strings/0x409/serialnumber
-echo "BOBER bring-up" >$g/strings/0x409/product
+echo courbet >$g/strings/0x409/serialnumber
+echo "courbet bring-up" >$g/strings/0x409/product
 echo ncm+acm >$g/configs/c.1/strings/0x409/configuration
 echo 02:62:6f:62:65:01 >$g/functions/ncm.usb0/host_addr
 echo 02:62:6f:62:65:02 >$g/functions/ncm.usb0/dev_addr

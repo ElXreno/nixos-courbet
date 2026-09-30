@@ -39,8 +39,17 @@
       kmake = pkgs.writeShellScriptBin "kmake" ''
         exec make ${toString kbuildFlags} CC="ccache clang" "$@"
       '';
+
     in
     {
+      nixosModules.default = import ./modules/courbet { inherit kernel; };
+
+      lib.mkBootImg =
+        buildPkgs: system:
+        buildPkgs.runCommand "boot.img" { } (
+          (import ./bootimg.nix).fromSystem "${buildPkgs.android-tools}/bin/mkbootimg" system "$out"
+        );
+
       packages.x86_64-linux = {
         inherit kernel;
         inherit (kernel) configfile;
