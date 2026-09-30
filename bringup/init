@@ -1,0 +1,50 @@
+#!/bin/busybox sh
+/bin/busybox --install -s /bin
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+mkdir -p /dev/pts
+mount -t devpts devpts /dev/pts
+mount -t configfs configfs /sys/kernel/config
+mount -t debugfs debugfs /sys/kernel/debug
+mount -t pstore pstore /sys/fs/pstore
+
+exec >/dev/kmsg 2>&1
+
+g=/sys/kernel/config/usb_gadget/g1
+mkdir -p $g/strings/0x409 $g/functions/ncm.usb0 $g/functions/acm.usb0 $g/configs/c.1/strings/0x409
+echo 0x18d1 >$g/idVendor
+echo 0xd001 >$g/idProduct
+echo bober >$g/strings/0x409/serialnumber
+echo "BOBER bring-up" >$g/strings/0x409/product
+echo ncm+acm >$g/configs/c.1/strings/0x409/configuration
+echo 02:62:6f:62:65:01 >$g/functions/ncm.usb0/host_addr
+echo 02:62:6f:62:65:02 >$g/functions/ncm.usb0/dev_addr
+ln -s $g/functions/ncm.usb0 $g/configs/c.1/
+ln -s $g/functions/acm.usb0 $g/configs/c.1/
+
+i=0
+while [ -z "$(ls /sys/class/udc 2>/dev/null)" ] && [ $i -lt 60 ]; do
+    sleep 1
+    i=$((i + 1))
+done
+ls /sys/class/udc | head -n 1 >$g/UDC
+
+ip link set usb0 up
+ip addr add 172.16.42.1/24 dev usb0
+
+mkdir -p /var/lib/misc
+cat >/etc/udhcpd.conf <<EOF
+start 172.16.42.2
+end 172.16.42.2
+interface usb0
+option subnet 255.255.255.0
+EOF
+udhcpd /etc/udhcpd.conf
+telnetd -l /bin/sh
+
+while true; do
+    setsid sh -c 'exec sh </dev/ttyGS0 >/dev/ttyGS0 2>&1'
+    sleep 1
+done
