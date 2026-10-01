@@ -19,15 +19,25 @@ let
   remoteprocFirmware =
     pkgs.runCommand "courbet-remoteproc-firmware" { passthru.compressFirmware = false; }
       ''
+        img=/run/firmware/modem/image
         fw=$out/lib/firmware/qcom/sm7150/xiaomi/courbet
         mkdir -p $fw
-        for f in cdsp; do
-          ln -s /run/firmware/modem/image/$f.mdt $fw/$f.mbn
+        for f in cdsp modem; do
+          ln -s $img/$f.mdt $fw/$f.mbn
           for i in $(seq -w 0 49); do
-            ln -s /run/firmware/modem/image/$f.b$i $fw/$f.b$i
+            ln -s $img/$f.b$i $fw/$f.b$i
           done
         done
+        for f in modem_pr wlanmdsp.mbn; do
+          ln -s $img/$f $fw/$f
+        done
       '';
+
+  wifiFirmware = pkgs.runCommand "courbet-wifi-firmware" { passthru.compressFirmware = false; } ''
+    fw=$out/lib/firmware/ath10k/WCN3990/hw1.0
+    install -Dm644 ${pkgs.linux-firmware}/lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin $fw/firmware-5.bin
+    ln -s /run/firmware/modem/image/bd_k9a.bin $fw/board.bin
+  '';
 
   gpuFirmware = pkgs.runCommand "courbet-gpu-firmware" { } ''
     for f in a630_sqe.fw a630_gmu.bin; do
@@ -56,7 +66,7 @@ in
       "clk_ignore_unused"
       "pd_ignore_unused"
     ];
-    blacklistedKernelModules = [ "qcom_q6v5_pas" ];
+    kernelModules = [ "qcom_pd_mapper" ];
 
     initrd = {
       systemd = {
@@ -106,7 +116,35 @@ in
   hardware.firmware = [
     gpuFirmware
     remoteprocFirmware
+    wifiFirmware
   ];
+
+  systemd.services.tqftpserv = {
+    description = "QRTR TFTP service for remote processors";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.tqftpserv}/bin/tqftpserv";
+      Restart = "always";
+      RestartSec = 1;
+    };
+  };
+
+  systemd.services.rmtfs = {
+    description = "Qualcomm remote filesystem service for the modem";
+    wantedBy = [ "multi-user.target" ];
+    requires = [ "run-firmware-modem.mount" ];
+    wants = [ "tqftpserv.service" ];
+    after = [
+      "run-firmware-modem.mount"
+      "tqftpserv.service"
+    ];
+    startLimitIntervalSec = 0;
+    serviceConfig = {
+      ExecStart = "${pkgs.rmtfs}/bin/rmtfs -r -P -s";
+      Restart = "always";
+      RestartSec = 1;
+    };
+  };
 
   systemd.services.usb-gadget = {
     description = "USB gadget with NCM networking and ACM console";
