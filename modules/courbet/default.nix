@@ -33,11 +33,28 @@ let
         done
       '';
 
-  wifiFirmware = pkgs.runCommand "courbet-wifi-firmware" { passthru.compressFirmware = false; } ''
-    fw=$out/lib/firmware/ath10k/WCN3990/hw1.0
-    install -Dm644 ${pkgs.linux-firmware}/lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin $fw/firmware-5.bin
-    ln -s /run/firmware/modem/image/bd_k9a.bin $fw/board.bin
-  '';
+  qcaSwissArmyKnife = pkgs.fetchFromGitHub {
+    owner = "qca";
+    repo = "qca-swiss-army-knife";
+    rev = "6df4dae3e2f5e4c2903f3cafd40996fc1b3639ce";
+    hash = "sha256-FFoV58YVK7KGBw/JPFWcvGkJOONrfKCvACprYCzIKeg=";
+  };
+
+  wifiFirmware =
+    pkgs.runCommand "courbet-wifi-firmware"
+      {
+        nativeBuildInputs = [ pkgs.python3 ];
+        passthru.compressFirmware = false;
+      }
+      ''
+        fw=$out/lib/firmware/ath10k/WCN3990/hw1.0/sm7150
+        mkdir -p $fw
+        python3 ${qcaSwissArmyKnife}/tools/scripts/ath10k/ath10k-fwencoder --create \
+          --set-fw-api=5 --set-wmi-op-version=tlv --set-htt-op-version=tlv \
+          --features=wowlan,mfp-support,mgmt-tx-by-ref,non-bmi,single-chan-info-per-channel \
+          --timestamp=0 --output=$fw/firmware-5.bin
+        ln -s /run/firmware/modem/image/bd_k9a.bin $fw/board.bin
+      '';
 
   wifiMac = pkgs.writeShellScript "courbet-wifi-mac" ''
     set -euo pipefail
