@@ -138,6 +138,8 @@ in
 
   systemd.tpm2.enable = false;
 
+  systemd.settings.Manager.RebootWatchdogSec = "30s";
+
   fileSystems = {
     "/run/firmware/modem" = firmwarePartition "modem";
     "/run/firmware/bluetooth" = firmwarePartition "bluetooth";
