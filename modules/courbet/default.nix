@@ -64,7 +64,10 @@ let
   };
 in
 {
-  imports = [ ./gpu.nix ];
+  imports = [
+    ./gpu.nix
+    ./panel.nix
+  ];
 
   nixpkgs.hostPlatform = "aarch64-linux";
 
