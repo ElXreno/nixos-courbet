@@ -146,11 +146,15 @@ in
     description = "Qualcomm remote filesystem service for the modem";
     wantedBy = [ "multi-user.target" ];
     requires = [ "run-firmware-modem.mount" ];
-    wants = [ "tqftpserv.service" ];
+    wants = [
+      "network-pre.target"
+      "tqftpserv.service"
+    ];
     after = [
       "run-firmware-modem.mount"
       "tqftpserv.service"
     ];
+    before = [ "network-pre.target" ];
     startLimitIntervalSec = 0;
     serviceConfig = {
       ExecStart = "${pkgs.rmtfs}/bin/rmtfs -r -P -s";
