@@ -63,6 +63,32 @@ let
     ${pkgs.iproute2}/bin/ip link set dev "$1" address "$mac"
   '';
 
+  bluetoothAddress = pkgs.writeShellScript "courbet-bluetooth-address" ''
+    set -euo pipefail
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.bluez
+        pkgs.coreutils
+        pkgs.gnugrep
+        pkgs.libqmi
+      ]
+    }
+    for _ in $(seq 60); do
+      cfg=$(btmgmt --index "$1" config 2>/dev/null || true)
+      case $cfg in
+        *"missing options: public-address"*) break ;;
+        *"missing options:"*) exit 0 ;;
+      esac
+      sleep 1
+    done
+    for _ in $(seq 60); do
+      raw=$(qmicli -d qrtr://0 --dms-get-mac-address=bt 2>/dev/null |
+        grep -oiE '([0-9a-f]{2}:){5}[0-9a-f]{2}') && break
+      sleep 1
+    done
+    btmgmt --index "$1" public-addr "$(printf '%s\n' "$raw" | tr : '\n' | tac | paste -sd:)"
+  '';
+
   gpuFirmware = pkgs.runCommand "courbet-gpu-firmware" { } ''
     for f in a630_sqe.fw a630_gmu.bin; do
       install -Dm644 ${pkgs.linux-firmware}/lib/firmware/qcom/$f $out/lib/firmware/qcom/$f
@@ -160,7 +186,17 @@ in
 
   services.udev.extraRules = ''
     ACTION=="add", SUBSYSTEM=="net", DRIVERS=="ath10k_snoc", RUN+="${wifiMac} $name"
+    ACTION=="add", SUBSYSTEM=="bluetooth", ENV{DEVTYPE}=="host", DRIVERS=="hci_uart_qca", TAG+="systemd", ENV{SYSTEMD_WANTS}+="courbet-bluetooth-address@%k.service"
   '';
+
+  systemd.services."courbet-bluetooth-address@" = {
+    description = "Bluetooth public address of %i from the modem NV";
+    after = [ "rmtfs.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${bluetoothAddress} %i";
+    };
+  };
 
   systemd.services.systemd-udevd.serviceConfig.RestrictAddressFamilies = [ "AF_QIPCRTR" ];
 
