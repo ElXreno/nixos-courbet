@@ -114,6 +114,7 @@ let
 in
 {
   imports = [
+    ./charge-limit.nix
     ./gpu.nix
     ./ipa.nix
     ./panel.nix
