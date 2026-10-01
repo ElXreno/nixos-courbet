@@ -64,6 +64,8 @@ let
   };
 in
 {
+  imports = [ ./gpu.nix ];
+
   nixpkgs.hostPlatform = "aarch64-linux";
 
   boot = {
