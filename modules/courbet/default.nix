@@ -69,6 +69,12 @@ let
     done
   '';
 
+  bluetoothFirmware = pkgs.runCommand "courbet-bluetooth-firmware" { } ''
+    for f in crbtfw21.tlv crnv21.bin; do
+      install -Dm644 ${pkgs.linux-firmware}/lib/firmware/qca/$f $out/lib/firmware/qca/$f
+    done
+  '';
+
   firmwarePartition = name: {
     device = "/dev/disk/by-partlabel/${name}";
     fsType = "vfat";
@@ -146,6 +152,7 @@ in
   };
 
   hardware.firmware = [
+    bluetoothFirmware
     gpuFirmware
     remoteprocFirmware
     wifiFirmware
