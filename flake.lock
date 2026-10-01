@@ -3,11 +3,11 @@
     "linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1790806711,
-        "narHash": "sha256-7J2N8l5RDUZj3wnKIHQhhKf2wDjGf5jL5mpZJon2ruA=",
+        "lastModified": 1790816074,
+        "narHash": "sha256-NaeUZjuX1nmdUw+gZY7zRQ0Spw+fb+3hgdfNXoMNC98=",
         "owner": "ElXreno",
         "repo": "linux",
-        "rev": "7187f8888fe5ea391f482fee61ebe6e2f4877c80",
+        "rev": "387ce5ae3a4f50cecf536bc5a4779e24e3588d9d",
         "type": "github"
       },
       "original": {
