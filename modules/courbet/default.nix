@@ -233,10 +233,7 @@ in
     '';
   };
 
-  systemd.services."serial-getty@ttyGS0" = {
-    wantedBy = [ "getty.target" ];
-    overrideStrategy = "asDropin";
-  };
+  systemd.targets.getty.wants = [ "serial-getty@ttyGS0.service" ];
 
   networking.useNetworkd = true;
   networking.networkmanager.unmanaged = [ "usb0" ];
