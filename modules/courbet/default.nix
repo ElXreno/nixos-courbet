@@ -170,7 +170,10 @@ in
 
   systemd.tpm2.enable = false;
 
-  systemd.settings.Manager.RebootWatchdogSec = "30s";
+  systemd.settings.Manager = {
+    RebootWatchdogSec = "30s";
+    RuntimeWatchdogSec = "30s";
+  };
 
   fileSystems = {
     "/run/firmware/modem" = firmwarePartition "modem";
