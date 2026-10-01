@@ -39,6 +39,13 @@ let
     ln -s /run/firmware/modem/image/bd_k9a.bin $fw/board.bin
   '';
 
+  wifiMac = pkgs.writeShellScript "courbet-wifi-mac" ''
+    set -euo pipefail
+    mac=$(${pkgs.libqmi}/bin/qmicli -d qrtr://0 --dms-get-mac-address=wlan |
+      ${pkgs.gnugrep}/bin/grep -oiE '([0-9a-f]{2}:){5}[0-9a-f]{2}')
+    ${pkgs.iproute2}/bin/ip link set dev "$1" address "$mac"
+  '';
+
   gpuFirmware = pkgs.runCommand "courbet-gpu-firmware" { } ''
     for f in a630_sqe.fw a630_gmu.bin; do
       install -Dm644 ${pkgs.linux-firmware}/lib/firmware/qcom/$f $out/lib/firmware/qcom/$f
@@ -118,6 +125,12 @@ in
     remoteprocFirmware
     wifiFirmware
   ];
+
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="net", DRIVERS=="ath10k_snoc", RUN+="${wifiMac} $name"
+  '';
+
+  systemd.services.systemd-udevd.serviceConfig.RestrictAddressFamilies = [ "AF_QIPCRTR" ];
 
   systemd.services.tqftpserv = {
     description = "QRTR TFTP service for remote processors";
