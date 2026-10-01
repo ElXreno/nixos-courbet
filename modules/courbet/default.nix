@@ -66,6 +66,7 @@ in
 {
   imports = [
     ./gpu.nix
+    ./ipa.nix
     ./panel.nix
   ];
 
