@@ -22,7 +22,7 @@ let
         img=/run/firmware/modem/image
         fw=$out/lib/firmware/qcom/sm7150/xiaomi/courbet
         mkdir -p $fw
-        for f in cdsp modem; do
+        for f in cdsp modem venus; do
           ln -s $img/$f.mdt $fw/$f.mbn
           for i in $(seq -w 0 49); do
             ln -s $img/$f.b$i $fw/$f.b$i
