@@ -1,0 +1,35 @@
+From e6b9dbab7d247194d2f00840597295bbc8ecda0a Mon Sep 17 00:00:00 2001
+From: ElXreno <elxreno@gmail.com>
+Date: Fri, 2 Oct 2026 18:22:16 +0300
+Subject: [PATCH] sensor: Log the error before handing it to the task
+
+---
+ src/libssc-sensor.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/libssc-sensor.c b/src/libssc-sensor.c
+index f1a7104..bf16d67 100644
+--- a/src/libssc-sensor.c
++++ b/src/libssc-sensor.c
+@@ -111,9 +111,9 @@ sensor_close_ready (SSCClient *self, GAsyncResult *result, gpointer user_data)
+ 	GError *error = NULL;
+ 
+ 	if (!ssc_client_send_finish (self, result, &error)) {
++		g_debug ("Sensor disable request failed: %s", error->message);
+ 		g_task_return_error (task, error);
+ 		g_clear_object (&task);
+-		g_debug ("Sensor disable request failed: %s", error->message);
+ 		return;
+ 	}
+ 
+@@ -173,9 +173,9 @@ sensor_open_ready (SSCClient *self, GAsyncResult *result, gpointer user_data)
+ 	GError *error = NULL;
+ 
+ 	if (!ssc_client_send_finish (self, result, &error)) {
++		g_debug ("Sensor enable request failed: %s", error->message);
+ 		g_task_return_error (task, error);
+ 		g_clear_object (&task);
+-		g_debug ("Sensor enable request failed: %s", error->message);
+ 		return;
+ 	}
+ 

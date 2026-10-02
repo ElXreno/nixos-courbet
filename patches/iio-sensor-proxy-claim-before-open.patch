@@ -1,0 +1,32 @@
+From 73d237829740579ee408e95656e28b617face0e6 Mon Sep 17 00:00:00 2001
+From: ElXreno <elxreno@gmail.com>
+Date: Sat, 3 Oct 2026 02:41:42 +0300
+Subject: [PATCH] main: Only start or stop polling once the sensor is open
+
+---
+ src/iio-sensor-proxy.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/iio-sensor-proxy.c b/src/iio-sensor-proxy.c
+index 59257cc..2c50ae2 100644
+--- a/src/iio-sensor-proxy.c
++++ b/src/iio-sensor-proxy.c
+@@ -424,6 +424,7 @@ client_release (SensorData            *data,
+ 	g_hash_table_remove (ht, sender);
+ 
+ 	if (driver_type_exists (data, driver_type) &&
++	    DEVICE_FOR_TYPE(driver_type) &&
+ 	    g_hash_table_size (ht) == 0) {
+ 		SensorDevice *sensor_device = DEVICE_FOR_TYPE(driver_type);
+ 		driver_set_polling (sensor_device, FALSE);
+@@ -522,7 +523,9 @@ handle_generic_method_call (SensorData            *data,
+ 							   NULL);
+ 		g_hash_table_insert (ht, g_strdup (sender), GUINT_TO_POINTER (watch_id));
+ 
+-		if (driver_type_exists (data, driver_type)) {
++		if (driver_type_exists (data, driver_type) &&
++		    DEVICE_FOR_TYPE(driver_type) &&
++		    data->sensor_startup_dbus_invocations_delayed[driver_type]) {
+ 			SensorDevice *sensor_device = DEVICE_FOR_TYPE(driver_type);
+ 
+ 			/* No other clients for this sensor? Start it */
