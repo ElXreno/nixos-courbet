@@ -111,6 +111,15 @@ let
       "x-systemd.device-timeout=10s"
     ];
   };
+
+  initrdFirmwarePartition = name: {
+    what = "/dev/disk/by-partlabel/${name}";
+    where = "/run/firmware/${name}";
+    type = "vfat";
+    options = "ro,noatime";
+    wantedBy = [ "initrd.target" ];
+    before = [ "initrd.target" ];
+  };
 in
 {
   imports = [
@@ -137,6 +146,10 @@ in
       systemd = {
         enable = true;
         tpm2.enable = false;
+        mounts = map initrdFirmwarePartition [
+          "modem"
+          "bluetooth"
+        ];
       };
       includeDefaultModules = false;
     };
