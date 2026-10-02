@@ -128,6 +128,8 @@ in
       "console=tty0"
       "clk_ignore_unused"
       "pd_ignore_unused"
+      "panic=10"
+      "pstore.compress=none"
     ];
     kernelModules = [ "qcom_pd_mapper" ];
 
@@ -174,6 +176,8 @@ in
   systemd.settings.Manager = {
     RebootWatchdogSec = "30s";
     RuntimeWatchdogSec = "30s";
+    RuntimeWatchdogPreSec = "10s";
+    RuntimeWatchdogPreGovernor = "panic";
   };
 
   fileSystems = {
