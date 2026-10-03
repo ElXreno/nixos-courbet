@@ -282,6 +282,7 @@ in
       echo courbet >$g/strings/0x409/serialnumber
       echo courbet >$g/strings/0x409/product
       echo ncm+acm >$g/configs/c.1/strings/0x409/configuration
+      echo 0xa0 >$g/configs/c.1/bmAttributes
       echo 02:62:6f:62:65:01 >$g/functions/ncm.usb0/host_addr
       echo 02:62:6f:62:65:02 >$g/functions/ncm.usb0/dev_addr
       ln -sf $g/functions/ncm.usb0 $g/configs/c.1/
