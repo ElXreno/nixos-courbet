@@ -310,4 +310,7 @@ in
     };
     linkConfig.RequiredForOnline = "no";
   };
+
+  services.neard.enable = true;
+  systemd.services.neard.wantedBy = [ "multi-user.target" ];
 }
