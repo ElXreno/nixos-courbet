@@ -123,6 +123,7 @@ let
 in
 {
   imports = [
+    ./audio.nix
     ./bluetooth-debug.nix
     ./charge-limit.nix
     ./gpu.nix
