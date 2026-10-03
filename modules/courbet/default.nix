@@ -140,6 +140,7 @@ in
       "pd_ignore_unused"
       "panic=10"
       "pstore.compress=none"
+      "mitigations=off"
     ];
     kernelModules = [ "qcom_pd_mapper" ];
 
