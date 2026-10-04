@@ -7,6 +7,13 @@
 let
   cross = pkgs.pkgsCross.aarch64-multiplatform;
 
+  inherit (pkgs) lib;
+
+  makefile = lib.splitString "\n" (builtins.readFile "${src}/Makefile");
+  makeVar =
+    name: lib.removePrefix "${name} = " (lib.findFirst (lib.hasPrefix "${name} = ") "" makefile);
+  version = "${makeVar "VERSION"}.${makeVar "PATCHLEVEL"}.${makeVar "SUBLEVEL"}${makeVar "EXTRAVERSION"}";
+
   toolchain = [
     llvm.clang-unwrapped
     llvm.lld
@@ -48,9 +55,8 @@ let
   };
 in
 (cross.linuxManualConfig {
-  version = "7.1.0";
-  modDirVersion = "7.1.0-sm7150";
-  inherit src configfile;
+  inherit version src configfile;
+  modDirVersion = "${version}-sm7150";
   target = "Image.gz";
   buildDTBs = false;
   allowImportFromDerivation = true;
