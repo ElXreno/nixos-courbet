@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     linux = {
-      url = "github:ElXreno/linux/courbet";
+      url = "github:ElXreno/linux/courbet-7.3";
       flake = false;
     };
   };
