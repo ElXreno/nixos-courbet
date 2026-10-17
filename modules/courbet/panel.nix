@@ -36,8 +36,8 @@ let
   });
 in
 {
-  config = lib.mkIf config.services.xserver.desktopManager.phosh.enable {
-    services.xserver.desktopManager.phosh.package = lib.mkDefault (
+  config = lib.mkIf config.services.desktopManager.phosh.enable {
+    services.desktopManager.phosh.package = lib.mkDefault (
       (pkgs.phosh.override { inherit gmobile; }).overrideAttrs { doCheck = false; }
     );
   };
