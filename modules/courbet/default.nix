@@ -148,7 +148,6 @@ in
 
     initrd = {
       systemd = {
-        enable = true;
         tpm2.enable = false;
         mounts = map initrdFirmwarePartition [
           "modem"
