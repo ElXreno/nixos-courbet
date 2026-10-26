@@ -69,7 +69,10 @@ in
       "--eval=undefine modules"
     ]
     ++ kbuildFlags
-    ++ [ "CC=ccache clang" ];
+    ++ [
+      "CC=ccache clang"
+      "cmd_sign=${lib.getExe pkgs.kmodigest}$(space)$@"
+    ];
     preConfigure = ''
       export CCACHE_DIR=/nix/ccache
       export CCACHE_CONFIGPATH=${ccacheConf}
