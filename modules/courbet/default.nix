@@ -136,6 +136,7 @@ in
 
   boot = {
     kernelPackages = pkgs.linuxPackagesFor kernel;
+    consoleLogLevel = 7;
     kernelParams = [
       "console=tty0"
       "clk_ignore_unused"
@@ -143,6 +144,7 @@ in
       "panic=10"
       "pstore.compress=none"
       "mitigations=off"
+      "kpti=0"
     ];
     kernelModules = [ "qcom_pd_mapper" ];
 
@@ -186,6 +188,12 @@ in
   system.boot.loader.kernelFile = "Image.gz";
 
   hardware.deviceTree.enable = true;
+
+  console = {
+    earlySetup = true;
+    font = "ter-v24n";
+    packages = [ pkgs.terminus_font ];
+  };
 
   systemd.tpm2.enable = false;
 
@@ -295,6 +303,9 @@ in
   };
 
   systemd.targets.getty.wants = [ "serial-getty@ttyGS0.service" ];
+
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
 
   networking.useNetworkd = true;
   networking.networkmanager.unmanaged = [ "usb0" ];
