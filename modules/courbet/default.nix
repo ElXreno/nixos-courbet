@@ -135,7 +135,7 @@ in
   nixpkgs.hostPlatform = "aarch64-linux";
 
   boot = {
-    kernelPackages = pkgs.linuxPackagesFor kernel;
+    kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor kernel);
     consoleLogLevel = 7;
     kernelParams = [
       "console=tty0"

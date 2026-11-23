@@ -14,24 +14,20 @@ let
     name: lib.removePrefix "${name} = " (lib.findFirst (lib.hasPrefix "${name} = ") "" makefile);
   version = "${makeVar "VERSION"}.${makeVar "PATCHLEVEL"}.${makeVar "SUBLEVEL"}${makeVar "EXTRAVERSION"}";
 
-  toolchain = [
-    llvm.clang-unwrapped
-    llvm.lld
-    llvm.llvm
-  ];
+  crossLlvm = cross.buildPackages."llvmPackages_${lib.versions.major llvm.release_version}";
 
-  ccacheConf = pkgs.writeText "ccache.conf" ''
-    compression = true
-    max_size = 300G
-    sloppiness = include_file_mtime,include_file_ctime,random_seed
-    umask = 000
-  '';
+  stdenv = cross.stdenvAdapters.overrideCC cross.stdenv (
+    crossLlvm.clangNoCompilerRt.override { bintools = crossLlvm.bintoolsNoLibc; }
+  );
 
   configfile = pkgs.stdenv.mkDerivation {
     name = "linux-courbet.config";
     inherit src;
 
-    nativeBuildInputs = toolchain ++ [
+    nativeBuildInputs = [
+      llvm.clang-unwrapped
+      llvm.lld
+      llvm.llvm
       pkgs.bison
       pkgs.flex
       pkgs.openssl
@@ -55,33 +51,18 @@ let
   };
 in
 (cross.linuxManualConfig {
-  inherit version src configfile;
+  inherit
+    version
+    src
+    configfile
+    stdenv
+    ;
   modDirVersion = "${version}-sm7150";
   target = "Image.gz";
   buildDTBs = false;
   allowImportFromDerivation = true;
-  stdenv = cross.stdenvNoCC;
 }).overrideAttrs
   (prev: {
-    nativeBuildInputs = prev.nativeBuildInputs ++ toolchain ++ [ pkgs.ccache ];
-    makeFlags = [
-      "O=$(buildRoot)"
-      "--eval=undefine modules"
-    ]
-    ++ kbuildFlags
-    ++ [
-      "CC=ccache clang"
-      "cmd_sign=${lib.getExe pkgs.kmodigest}$(space)$@"
-    ];
-    preConfigure = ''
-      export CCACHE_DIR=/nix/ccache
-      export CCACHE_CONFIGPATH=${ccacheConf}
-      export CCACHE_COMPILERCHECK=string:${llvm.clang-unwrapped}
-      if [ ! -w "$CCACHE_DIR" ]; then
-        export CCACHE_DISABLE=1
-      fi
-    ''
-    + (prev.preConfigure or "");
     buildFlags = prev.buildFlags ++ [ "qcom/sm7150-xiaomi-courbet.dtb" ];
     postInstall = ''
       install -Dm644 $buildRoot/arch/arm64/boot/dts/qcom/sm7150-xiaomi-courbet.dtb \
