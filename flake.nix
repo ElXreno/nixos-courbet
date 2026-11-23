@@ -10,6 +10,7 @@
   outputs =
     { nixpkgs, linux, ... }:
     let
+      inherit (nixpkgs) lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       pkgsAarch64 = nixpkgs.legacyPackages.aarch64-linux;
       llvm = pkgs.llvmPackages_22;
@@ -37,7 +38,12 @@
       };
 
       kmake = pkgs.writeShellScriptBin "kmake" ''
-        exec make ${toString kbuildFlags} CC="ccache clang" "$@"
+        exec make ${
+          lib.escapeShellArgs (
+            lib.filter (flag: !lib.hasPrefix "O=" flag) kernel.makeFlags
+            ++ [ "CC=ccache ${lib.getExe kernel.stdenv.cc.cc}" ]
+          )
+        } "$@"
       '';
 
     in
